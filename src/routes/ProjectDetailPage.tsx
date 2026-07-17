@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { initialProjects } from '@/lib/api/projects/projects'
 import { useProjectStore } from '@/lib/api/projects/store'
@@ -6,13 +6,26 @@ import { ProjectService } from '@/lib/api/projects/service'
 import { CachedRepository } from '@/lib/api/projects/repository/cached'
 import { GitHubRepository } from '@/lib/api/projects/repository/github'
 import { LocalStorageCache } from '@/lib/api/projects/repository/cache'
+import ProjectDetail from '@/lib/components/project-detail/ProjectDetail'
+import ProjectDetailLoading from '@/lib/components/project-detail/ProjectDetailLoading'
+import ProjectDetailError from '@/lib/components/project-detail/ProjectDetailError'
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
-  const project = initialProjects.find(p => p.id === projectId)
-  const { projectDetail, detailLoading, detailError } = useProjectStore()
+  const store = useProjectStore()
   const serviceRef = useRef<ProjectService | null>(null)
+
+  const project = initialProjects.find(p => p.id === projectId)
+
+  const initService = useCallback(() => {
+    const cacheStore = new LocalStorageCache('project:', '1')
+    const repo = new CachedRepository(new GitHubRepository(), cacheStore)
+    const service = new ProjectService(repo)
+    service.setStore(useProjectStore.getState())
+    serviceRef.current = service
+    return service
+  }, [])
 
   useEffect(() => {
     if (!project) {
@@ -20,69 +33,64 @@ export default function ProjectDetailPage() {
       return
     }
 
-    const cacheStore = new LocalStorageCache('project:', '1')
-    const repo = new CachedRepository(new GitHubRepository(), cacheStore)
-    const service = new ProjectService(repo)
-    service.setStore(useProjectStore.getState())
-    serviceRef.current = service
-
+    const service = initService()
     service.openDetail(project)
 
     return () => {
-      const store = useProjectStore.getState()
       store.setProjectDetail(null)
       store.setDetailLoading(false)
       store.setDetailError(null)
       serviceRef.current = null
     }
-  }, [projectId, project, navigate])
+  }, [projectId, project, navigate, initService, store])
 
   if (!project) return null
 
-  if (detailLoading) {
+  if (store.detailLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 w-64 bg-custom-4 rounded" />
-          <div className="h-4 w-48 bg-custom-4 rounded" />
-        </div>
+      <div className="min-h-screen p-8 max-w-4xl mx-auto">
+        <button
+          onClick={() => navigate('/')}
+          className="mb-8 text-sm text-custom-3 hover:text-text transition-colors"
+        >
+          &larr; Back
+        </button>
+        <ProjectDetailLoading />
       </div>
     )
   }
 
-  if (detailError) {
+  if (store.detailError) {
     return (
-      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
-        <p className="text-red-500">{detailError}</p>
-        <p className="text-custom-3">{project.name}</p>
+      <div className="min-h-screen p-8 max-w-4xl mx-auto">
         <button
           onClick={() => navigate('/')}
-          className="px-4 py-2 rounded-lg bg-primary text-white"
+          className="mb-8 text-sm text-custom-3 hover:text-text transition-colors"
         >
-          Back to Home
+          &larr; Back
         </button>
+        <ProjectDetailError
+          project={project}
+          error={store.detailError ?? undefined}
+          onRetry={() => {
+            const service = initService()
+            service.openDetail(project)
+          }}
+        />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-8 max-w-4xl mx-auto">
       <button
         onClick={() => navigate('/')}
         className="mb-8 text-sm text-custom-3 hover:text-text transition-colors"
       >
         &larr; Back
       </button>
-      {projectDetail && (
-        <div>
-          <h1 className="font-heading text-3xl mb-2">{projectDetail.name}</h1>
-          <p className="text-custom-3 mb-4">{projectDetail.description}</p>
-          <p className="text-sm">
-            Stars: {projectDetail.starsCount ?? '-'} | Forks:{' '}
-            {projectDetail.forksCount ?? '-'} | Downloads:{' '}
-            {projectDetail.downloadsCount ?? '-'}
-          </p>
-        </div>
+      {store.projectDetail && serviceRef.current && (
+        <ProjectDetail project={store.projectDetail} service={serviceRef.current} />
       )}
     </div>
   )
