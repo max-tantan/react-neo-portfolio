@@ -13,6 +13,7 @@ import Tools from '@/lib/components/sections/Tools'
 import Social from '@/lib/components/sections/Social'
 import Contact from '@/lib/components/sections/Contact'
 import Footer from '@/lib/components/sections/Footer'
+import BackToTop from '@/lib/components/common/BackToTop'
 
 export default function HomePage() {
   const initialized = useRef(false)
@@ -39,6 +40,7 @@ export default function HomePage() {
       <Social />
       <Contact />
       <Footer />
+      <BackToTop />
     </>
   )
 }

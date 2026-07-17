@@ -68,7 +68,7 @@ export class LocalStorageCache implements CacheStore {
           this.evictOldest()
           try {
             localStorage.setItem(cacheKey, JSON.stringify(entry))
-          } catch {}
+          } catch { /* ignore quota errors */ }
         }
       }
     }
@@ -129,7 +129,7 @@ export class LocalStorageCache implements CacheStore {
               oldestTime = time
               oldestKey = k
             }
-          } catch {}
+          } catch { /* ignore parse errors */ }
         }
       }
     }

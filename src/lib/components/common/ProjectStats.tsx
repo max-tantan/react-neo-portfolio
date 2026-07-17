@@ -1,26 +1,27 @@
+import { useCountUp } from '@/lib/hooks/useCountUp'
+
 interface ProjectStatsProps {
   stars?: number
   forks?: number
   downloads?: number
 }
 
-export default function ProjectStats({ stars, forks, downloads }: ProjectStatsProps) {
-  const items = [
-    { label: 'Stars', value: stars },
-    { label: 'Forks', value: forks },
-    { label: 'Downloads', value: downloads },
-  ]
+function AnimatedStat({ label, value }: { label: string; value: number }) {
+  const { count, ref } = useCountUp(value, 800)
 
   return (
+    <span ref={ref} className="text-custom-3">
+      {label}: <strong className="text-text">{count.toLocaleString()}</strong>
+    </span>
+  )
+}
+
+export default function ProjectStats({ stars, forks, downloads }: ProjectStatsProps) {
+  return (
     <div className="flex gap-4 text-xs">
-      {items.map(
-        item =>
-          item.value !== undefined && (
-            <span key={item.label} className="text-custom-3">
-              {item.label}: <strong className="text-text">{item.value}</strong>
-            </span>
-          ),
-      )}
+      {stars !== undefined && <AnimatedStat label="Stars" value={stars} />}
+      {forks !== undefined && <AnimatedStat label="Forks" value={forks} />}
+      {downloads !== undefined && <AnimatedStat label="Downloads" value={downloads} />}
     </div>
   )
 }

@@ -8,7 +8,7 @@ export default function Navbar() {
   const { scrollY, direction } = useScroll()
   const [mobileOpen, setMobileOpen] = useState(false)
   const hidden = direction === 'down' && scrollY > 100
-  const bgOpacity = Math.min(scrollY / 200, 1)
+  const scrolled = scrollY > 50
 
   useEffect(() => {
     if (mobileOpen) {
@@ -24,10 +24,10 @@ export default function Navbar() {
       className={[
         'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
         hidden ? '-translate-y-full' : 'translate-y-0',
+        scrolled
+          ? 'bg-background/90 dark:bg-custom-1/90 backdrop-blur-sm shadow-sm'
+          : 'bg-transparent',
       ].join(' ')}
-      style={{
-        backgroundColor: `rgba(245, 245, 245, ${bgOpacity})`,
-      }}
     >
       <div className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16">
         <a href="/" className="flex items-center gap-2 font-heading text-lg">
@@ -50,7 +50,7 @@ export default function Navbar() {
 
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="lg:hidden p-2"
+          className="lg:hidden p-2 text-text"
           aria-label="Toggle menu"
         >
           <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -64,7 +64,7 @@ export default function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="lg:hidden bg-background border-t border-custom-4 dark:border-custom-2">
+        <div className="lg:hidden bg-background dark:bg-custom-1 border-t border-custom-4 dark:border-custom-2">
           <div className="flex flex-col p-4 gap-3">
             {navLinks.map(link => (
               <a

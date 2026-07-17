@@ -31,6 +31,10 @@
   src: url('/fonts/ANGELES.woff2') format('woff2');
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .text-stroke {
   -webkit-text-stroke: 1px currentColor;
 }

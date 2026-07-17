@@ -48,7 +48,7 @@ export default function ProjectDetail({ project, service }: ProjectDetailProps) 
 
     load()
     return () => { cancelled = true }
-  }, [project.id, project.readmeBaseUrl, service])
+  }, [project, service])
 
   useEffect(() => {
     if (status !== 'done' || !html) return

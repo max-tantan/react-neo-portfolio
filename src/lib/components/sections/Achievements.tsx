@@ -2,23 +2,31 @@ import { useInView } from '@/lib/hooks/useInView'
 import { achievementsData } from '@/lib/api/achievements/achievements'
 
 export default function Achievements() {
-  const { ref, isInView } = useInView({ once: true })
+  const { ref: headingRef, isInView: headingVisible } = useInView({ once: true })
+  const { ref: gridRef, isInView: gridVisible } = useInView({ once: true })
 
   return (
     <section id="achievements" className="py-20">
       <div className="max-w-6xl mx-auto px-4">
-        <h2 className="font-heading text-3xl mb-8 text-center">Achievements</h2>
+        <h2
+          ref={headingRef}
+          className={`font-heading text-3xl mb-8 text-center transition-all duration-700 ${
+            headingVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}
+        >
+          Achievements
+        </h2>
 
         <div
-          ref={ref}
+          ref={gridRef}
           className={`grid sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-700 ${
-            isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+            gridVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
           {achievementsData.map((item, i) => (
             <div
               key={item.title}
-              className="p-6 rounded-xl border border-custom-4 dark:border-custom-2 bg-white dark:bg-custom-1 hover:shadow-lg transition-shadow"
+              className="p-6 rounded-xl border border-custom-4 dark:border-custom-2 bg-white dark:bg-custom-1 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
               style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mb-4">
@@ -35,6 +43,11 @@ export default function Achievements() {
               )}
             </div>
           ))}
+          {achievementsData.length === 0 && (
+            <div className="col-span-full text-center py-16 text-custom-3">
+              No achievements to display yet.
+            </div>
+          )}
         </div>
       </div>
     </section>
